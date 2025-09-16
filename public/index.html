@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Gmail Batch Email Sender</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --primary-light: #818cf8;
+            --secondary: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --gray: #6b7280;
+            --gray-light: #e5e7eb;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.05);
+            --glow: 0 0 10px rgba(79, 70, 229, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f0f4ff 0%, #fdf2f8 100%);
+            color: var(--dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 0;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 24px 16px;
+            box-shadow: var(--card-shadow);
+            z-index: 10;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 32px;
+            padding: 0 12px;
+        }
+
+        .logo-icon {
+            font-size: 28px;
+            background: rgba(255, 255, 255, 0.2);
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-text {
+            font-weight: 700;
+            font-size: 20px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .nav-item i {
+            font-size: 20px;
+            width: 24px;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 24px 32px;
+            overflow-y: auto;
+            max-height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--gray-light);
+        }
+
+        .header h1 {
+            font-weight: 800;
+            font-size: 28px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--glow);
+        }
+
+        .stat-card {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            font-size: 24px;
+        }
+
+        .icon-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--secondary);
+        }
+
+        .icon-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .icon-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-size: 14px;
+        }
+
+        /* Main Content Area */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        .main-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title i {
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .input-hint {
+            font-size: 13px;
+            color: var(--gray);
+            margin-top: 4px;
+        }
+
+        input[type=text],
+        input[type=number],
+        input[type=file],
+        select,
+        textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--gray-light);
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 24px;
+            margin-top: 10px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .radio-option input[type="radio"] {
+            width: 18px;
+            height: 18px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Buttons */
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 20px;
+            border: 0;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-success {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #0da271;
+        }
+
+        /* Status Area */
+        .status {
+            margin-top: 24px;
+        }
+
+        .status-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .status-title {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .status-content {
+            background: #f8fafc;
+            border: 1px solid var(--gray-light);
+            border-radius: 10px;
+            padding: 16px;
+            min-height: 100px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin-top: 16px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .stat-box {
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid var(--gray-light);
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        /* Preview */
+        .preview {
+            margin-top: 24px;
+        }
+
+        .preview-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .preview-title {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .preview-count {
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        .emails-list {
+            background: #f8fafc;
+            border: 1px solid var(--gray-light);
+            border-radius: 10px;
+            padding: 16px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .emails-list ul {
+            list-style: none;
+            columns: 2;
+            column-gap: 20px;
+        }
+
+        .emails-list li {
+            padding: 6px 0;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+            break-inside: avoid;
+        }
+
+        .emails-list li:last-child {
+            border-bottom: none;
+        }
+
+        /* AI Assistant Panel */
+        .ai-panel {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c73e6 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ai-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .ai-icon {
+            font-size: 24px;
+            background: rgba(255, 255, 255, 0.2);
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ai-title {
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .ai-tips {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .ai-tip {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .ai-tip:last-child {
+            border-bottom: none;
+        }
+
+        .ai-tip-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ai-tip-content {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .ai-action {
+            margin-top: auto;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+
+        .ai-action:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 992px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                display: none;
+            }
+            
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .emails-list ul {
+                columns: 1;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .radio-group {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+
+        /* Animation */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* Utility Classes */
+        .mt-20 {
+            margin-top: 20px;
+        }
+
+        .mb-16 {
+            margin-bottom: 16px;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-paper-plane"></i>
+                </div>
+                <div class="logo-text">MailAI</div>
+            </div>
+            
+            <div class="nav-item active">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </div>
+            <div class="nav-item">
+                <i class="fas fa-paper-plane"></i>
+                <span>Campaigns</span>
+            </div>
+            <div class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>Audience</span>
+            </div>
+            <div class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics</span>
+            </div>
+            <div class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </div>
+            
+            <div class="nav-item" style="margin-top: 40px;">
+                <i class="fas fa-question-circle"></i>
+                <span>Help Center</span>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h1>AI-Powered Email Campaign Dashboard</h1>
+                <div class="user-profile">
+                    <div class="avatar">JS</div>
+                    <div>
+                        <div>John Smith</div>
+                        <div style="font-size: 13px; color: var(--gray);">Admin</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Dashboard -->
+            <div class="dashboard-grid">
+                <div class="card stat-card">
+                    <div class="stat-icon icon-success">
+                        <i class="fas fa-paper-plane"></i>
+                    </div>
+                    <div class="stat-value">12,489</div>
+                    <div class="stat-label">Emails Sent</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-icon icon-warning">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-value">5,274</div>
+                    <div class="stat-label">Total Recipients</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-icon icon-danger">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <div class="stat-value">87.3%</div>
+                    <div class="stat-label">Success Rate</div>
+                </div>
+            </div>
+
+            <!-- Main Content Grid -->
+            <div class="content-grid">
+                <!-- Left Panel -->
+                <div class="main-panel">
+                    <!-- Upload Card -->
+                    <div class="card">
+                        <div class="card-title">
+                            <i class="fas fa-file-import"></i>
+                            <span>Recipient Data</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="file">CSV File <span style="color: var(--danger)">*</span></label>
+                            <input id="file" type="file" accept=".csv,.xlsx,.xls,.txt"/>
+                            <p class="input-hint">Supported formats: CSV, Excel (.xlsx, .xls), Text files with emails</p>
+                        </div>
+                    </div>
+
+                    <!-- Content Card -->
+                    <div class="card">
+                        <div class="card-title">
+                            <i class="fas fa-envelope"></i>
+                            <span>Email Content</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="subject">Subject <span style="color: var(--danger)">*</span></label>
+                            <input id="subject" type="text" placeholder="Enter email subject" value="Hello from MailAI"/>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="body">Message Content <span style="color: var(--danger)">*</span></label>
+                            <textarea id="body" placeholder="Write your email content here">This is a test email sent through the AI-powered MailAI platform.</textarea>
+                            <p class="input-hint">Use &#123;&#123;column_name&#125;&#125; for personalization (e.g., Dear &#123;&#123;first_name&#125;&#125;)</p>
+                        </div>
+                    </div>
+
+                    <!-- Configuration Card -->
+                    <div class="card">
+                        <div class="card-title">
+                            <i class="fas fa-cog"></i>
+                            <span>Sending Configuration</span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Sending Mode</label>
+                            <div class="radio-group">
+                                <label class="radio-option">
+                                    <input type="radio" name="mode" value="bcc-batched" checked/>
+                                    <span>BCC Batched</span>
+                                </label>
+                                <label class="radio-option">
+                                    <input type="radio" name="mode" value="individual"/>
+                                    <span>Individual Emails</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="bccOptions">
+                            <div class="grid">
+                                <div class="form-group">
+                                    <label for="groupSize">Group Size</label>
+                                    <input id="groupSize" type="number" value="100" min="1" max="100"/>
+                                    <p class="input-hint">Max 100 recipients per email (Gmail limit)</p>
+                                </div>
+                                <div class="form-group">
+                                    <label for="batchDelayMs">Delay Between Batches (ms)</label>
+                                    <input id="batchDelayMs" type="number" value="120000" min="0"/>
+                                    <p class="input-hint">2 minutes = 120,000 ms</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="indivOptions" class="hidden">
+                            <div class="grid">
+                                <div class="form-group">
+                                    <label for="concurrency">Concurrency Limit</label>
+                                    <input id="concurrency" type="number" value="5" min="1" max="10"/>
+                                    <p class="input-hint">Simultaneous sending operations</p>
+                                </div>
+                                <div class="form-group">
+                                    <label for="individualDelayMs">Delay Between Emails (ms)</label>
+                                    <input id="individualDelayMs" type="number" value="1000" min="0"/>
+                                    <p class="input-hint">1 second = 1,000 ms</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="actions">
+                            <button id="previewBtn" class="btn btn-secondary">
+                                <i class="fas fa-eye"></i>
+                                Preview CSV
+                            </button>
+                            <button id="testBtn" class="btn btn-success">
+                                <i class="fas fa-vial"></i>
+                                Send Test Email
+                            </button>
+                            <button id="sendBtn" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i>
+                                Start Sending
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Status Card -->
+                    <div class="card">
+                        <div class="status">
+                            <div class="status-header">
+                                <div class="status-title">Sending Status</div>
+                                <div id="progressText">0%</div>
+                            </div>
+                            <div class="status-content" id="status">Ready to send emails. Upload a CSV file to begin.</div>
+                            
+                            <div class="progress-container">
+                                <div class="progress-header">
+                                    <span>Campaign Progress</span>
+                                    <span id="progressPercent">0%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progressBar"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="stats">
+                                <div class="stat-box">
+                                    <div class="stat-value" id="statTotal">0</div>
+                                    <div class="stat-label">Total</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-value" id="statSuccess">0</div>
+                                    <div class="stat-label">Successful</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-value" id="statFailed">0</div>
+                                    <div class="stat-label">Failed</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-value" id="statRemaining">0</div>
+                                    <div class="stat-label">Remaining</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Preview Card -->
+                    <div class="card">
+                        <div class="preview">
+                            <div class="preview-header">
+                                <div class="preview-title">Email Preview</div>
+                                <div class="preview-count" id="previewCount">Showing 0 emails</div>
+                            </div>
+                            <div class="emails-list">
+                                <ul id="emailsList"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Panel - AI Assistant -->
+                <div class="ai-panel">
+                    <div class="ai-header">
+                        <div class="ai-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="ai-title">AI Assistant</div>
+                    </div>
+
+                    <div class="ai-tips">
+                        <div class="ai-tip">
+                            <div class="ai-tip-title">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>Optimization Tip</span>
+                            </div>
+                            <div class="ai-tip-content">
+                                Based on your history, sending batches of 85-90 emails has the highest success rate with Gmail.
+                            </div>
+                        </div>
+                        <div class="ai-tip">
+                            <div class="ai-tip-title">
+                                <i class="fas fa-clock"></i>
+                                <span>Timing Suggestion</span>
+                            </div>
+                            <div class="ai-tip-content">
+                                Your emails have 32% higher open rates when sent between 10AM - 12PM on weekdays.
+                            </div>
+                        </div>
+                        <div class="ai-tip">
+                            <div class="ai-tip-title">
+                                <i class="fas fa-chart-line"></i>
+                                <span>Performance</span>
+                            </div>
+                            <div class="ai-tip-content">
+                                Your last campaign had an 87.3% success rate. Adding a delay of 90s between batches can improve this to 92%.
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="ai-action">
+                        <i class="fas fa-magic"></i>
+                        Generate AI-optimized Content
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const el = (id) => document.getElementById(id);
+        const fileInput = el('file');
+        const subjectEl = el('subject');
+        const bodyEl = el('body');
+        const statusEl = el('status');
+        const emailsList = el('emailsList');
+        const previewCount = el('previewCount');
+        const progressBar = el('progressBar');
+        const progressText = el('progressText');
+        const progressPercent = el('progressPercent');
+        const statTotal = el('statTotal');
+        const statSuccess = el('statSuccess');
+        const statFailed = el('statFailed');
+        const statRemaining = el('statRemaining');
+
+        const groupSizeEl = el('groupSize');
+        const batchDelayEl = el('batchDelayMs');
+        const concurrencyEl = el('concurrency');
+        const indivDelayEl = el('individualDelayMs');
+        const bccOptions = el('bccOptions');
+        const indivOptions = el('indivOptions');
+
+        // Helper functions
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        function updateStats(total, success, failed) {
+            statTotal.textContent = formatNumber(total);
+            statSuccess.textContent = formatNumber(success);
+            statFailed.textContent = formatNumber(failed);
+            statRemaining.textContent = formatNumber(total - success - failed);
+            
+            // Update progress bar
+            if (total > 0) {
+                const progress = Math.round(((success + failed) / total) * 100);
+                progressBar.style.width = `${progress}%`;
+                progressPercent.textContent = `${progress}%`;
+                progressText.textContent = `${progress}%`;
+            }
+        }
+
+        function mode() {
+            return document.querySelector('input[name="mode"]:checked').value;
+        }
+
+        function toggleMode() {
+            const m = mode();
+            bccOptions.classList.toggle('hidden', m !== 'bcc-batched');
+            indivOptions.classList.toggle('hidden', m !== 'individual');
+        }
+
+        // Event listeners
+        document.querySelectorAll('input[name="mode"]').forEach(r => {
+            r.addEventListener('change', toggleMode);
+        });
+        
+        // Initialize
+        toggleMode();
+        updateStats(0, 0, 0);
+
+        // ---------- Preview ----------
+        el('previewBtn').addEventListener('click', async () => {
+            if (!fileInput.files[0]) {
+                statusEl.textContent = 'Please select a CSV file first.';
+                return;
+            }
+
+            const fd = new FormData();
+            fd.append('file', fileInput.files[0]);
+            fd.append('previewOnly', 'true');
+
+            statusEl.textContent = 'Parsing CSV file...';
+            emailsList.innerHTML = '';
+
+            try {
+                const res = await fetch('/send', { method: 'POST', body: fd });
+                const data = await res.json();
+                
+                if (!res.ok) {
+                    throw new Error(data.error || 'Failed to parse CSV file');
+                }
+                
+                statusEl.textContent = `Successfully parsed CSV with ${data.count} emails.`;
+                previewCount.textContent = `Showing ${Math.min(200, data.count)} emails`;
+                
+                // Clear previous list
+                emailsList.innerHTML = '';
+                
+                // Display emails
+                (data.emails || []).forEach(e => {
+                    const li = document.createElement('li');
+                    li.textContent = e;
+                    emailsList.appendChild(li);
+                });
+            } catch (err) {
+                statusEl.textContent = 'Error: ' + err.message;
+            }
+        });
+
+        // ---------- Test Email ----------
+        el('testBtn').addEventListener('click', async () => {
+            statusEl.textContent = 'Sending test email...';
+            
+            try {
+                // This would be implemented based on your backend
+                const res = await fetch('/test', { 
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        subject: subjectEl.value,
+                        body: bodyEl.value
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (!res.ok) {
+                    throw new Error(data.error || 'Failed to send test email');
+                }
+                
+                statusEl.textContent = 'Test email sent successfully!';
+            } catch (err) {
+                statusEl.textContent = 'Error: ' + err.message;
+            }
+        });
+
+        // ---------- Send Emails ----------
+        el('sendBtn').addEventListener('click', async () => {
+            if (!fileInput.files[0]) {
+                statusEl.textContent = 'Please select a CSV file first.';
+                return;
+            }
+
+            if (!subjectEl.value.trim()) {
+                statusEl.textContent = 'Please enter an email subject.';
+                subjectEl.focus();
+                return;
+            }
+
+            if (!bodyEl.value.trim()) {
+                statusEl.textContent = 'Please enter email content.';
+                bodyEl.focus();
+                return;
+            }
+
+            const fd = new FormData();
+            fd.append('file', fileInput.files[0]);
+            fd.append('previewOnly', 'false');
+            fd.append('subject', subjectEl.value.trim());
+            fd.append('text', bodyEl.value.trim());
+
+            if (mode() === 'bcc-batched') {
+                fd.append('mode', 'bcc-batched');
+                fd.append('groupSize', String(Math.min(100, Math.max(1, Number(groupSizeEl.value || 100)))));
+                fd.append('batchDelayMs', String(batchDelayEl.value || 120000));
+            } else {
+                fd.append('mode', 'individual');
+                fd.append('concurrency', String(concurrencyEl.value || 5));
+                fd.append('individualDelayMs', String(indivDelayEl.value || 1000));
+            }
+
+            statusEl.textContent = 'Starting sending process...';
+            updateStats(0, 0, 0);
+
+            try {
+                const res = await fetch('/send', { method: 'POST', body: fd });
+                const data = await res.json();
+                
+                if (!res.ok) {
+                    throw new Error(data.error || 'Failed to start sending process');
+                }
+
+                if (data.mode === 'bcc-batched') {
+                    const { totalRecipients, batches, successBatches, failedBatches } = data.summary || {};
+                    statusEl.textContent = `Batch sending completed. Total recipients: ${totalRecipients}, Batches: ${batches}, Successful: ${successBatches}, Failed: ${failedBatches}`;
+                    updateStats(totalRecipients, (successBatches * (totalRecipients / batches)), (failedBatches * (totalRecipients / batches)));
+                } else {
+                    const { total, success, failed } = data.summary || {};
+                    statusEl.textContent = `Individual sending completed. Total: ${total}, Successful: ${success}, Failed: ${failed}`;
+                    updateStats(total, success, failed);
+                }
+            } catch (err) {
+                statusEl.textContent = 'Error: ' + err.message;
+            }
+        });
+
+        // Simulate some initial stats for the dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            // These would normally come from your backend
+            setTimeout(() => {
+                el('statTotal').textContent = '5,274';
+                el('statSuccess').textContent = '4,872';
+                el('statFailed').textContent = '402';
+                el('statRemaining').textContent = '0';
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
